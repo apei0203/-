@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>泡泡点名 - 点名工具</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'SimHei', sans-serif;
+            background-color: #f8f3e9;
+            color: #5c3317;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23d4aa6d' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+        
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(to right, #a51c1c, #c62828);
+            color: #f9eddf;
+            border-bottom: 5px solid #d4aa6d;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .upload-section {
+            padding: 30px;
+            text-align: center;
+            background-color: rgba(249, 237, 223, 0.8);
+            margin: 20px auto;
+            border-radius: 15px;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 2px dashed #d4aa6d;
+        }
+        
+        .upload-section h2 {
+            color: #a51c1c;
+            margin-bottom: 20px;
+        }
+        
+        .file-requirements {
+            background-color: #f9d9b4;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        
+        .file-input-container {
+            position: relative;
+            display: inline-block;
+            margin: 20px 0;
+        }
+        
+        .file-input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-input-label {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(to bottom, #d4aa6d, #b38746);
+            color: #5c3317;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+        
+        .file-input-label:hover {
+            background: linear-gradient(to bottom, #e0b777, #c59a55);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .file-name {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #7a4d23;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            min-height: 60vh;
+            overflow: hidden;
+            padding: 20px;
+            display: none;
+        }
+        
+        .bubble {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: radial-gradient(circle at 30% 30%, #f9eddf, #d4aa6d);
+            border: 2px solid #a51c1c;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), inset 0 0 20px rgba(255, 215, 0, 0.3);
+            color: #5c3317;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-align: center;
+            user-select: none;
+            animation: float 5s infinite ease-in-out;
+        }
+        
+        .bubble:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3), inset 0 0 25px rgba(255, 215, 0, 0.4);
+        }
+        
+        .bubble.show-name {
+            background: radial-gradient(circle at 30% 30%, #f9d9b4, #c19b67);
+            width: auto;
+            min-width: 100px;
+            height: auto;
+            min-height: 70px;
+            padding: 10px 15px;
+            border-radius: 35px;
+            font-size: 1.1rem;
+            white-space: nowrap;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            25% {
+                transform: translateY(-10px) rotate(2deg);
+            }
+            50% {
+                transform: translateY(0) rotate(0deg);
+            }
+            75% {
+                transform: translateY(10px) rotate(-2deg);
+            }
+        }
+        
+        .controls {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(to right, #a51c1c, #c62828);
+            border-top: 5px solid #d4aa6d;
+            display: none;
+        }
+        
+        .btn {
+            background: #d4aa6d;
+            color: #5c3317;
+            border: none;
+            padding: 12px 30px;
+            margin: 0 15px;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-weight: bold;
+        }
+        
+        .btn:hover {
+            background: #f9eddf;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 15px;
+            color: #5c3317;
+            font-size: 0.9rem;
+            background-color: rgba(249, 237, 223, 0.7);
+        }
+        
+        /* 不同泡泡的不同动画延迟，创造错落有致的效果 */
+        .bubble:nth-child(2n) {
+            animation-delay: 1s;
+        }
+        
+        .bubble:nth-child(3n) {
+            animation-delay: 2s;
+        }
+        
+        .bubble:nth-child(5n) {
+            animation-delay: 3s;
+        }
+        
+        .bubble:nth-child(7n) {
+            animation-delay: 4s;
+        }
+        
+        .status-message {
+            text-align: center;
+            padding: 15px;
+            color: #a51c1c;
+            font-weight: bold;
+        }
+        
+        .reupload-btn {
+            display: none;
+            margin: 20px auto;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>泡泡点名</h1>
+        <p>上传名单，随机点名</p>
+    </div>
+    
+    <div class="upload-section" id="uploadSection">
+        <h2>上传学生名单</h2>
+        
+        <div class="file-requirements">
+            <p><strong>文件格式要求：</strong></p>
+            <p>1. Excel文件 (.xlsx 格式)</p>
+            <p>2. 第一列为学号/序号，第二列为姓名</p>
+            <p>3. 可以有标题行（如"学号"、"姓名"）</p>
+            <p>4. 示例格式：</p>
+            <pre>
+学号    姓名
+1       张三
+2       李四
+3       王五
+            </pre>
+        </div>
+        
+        <div class="file-input-container">
+            <label class="file-input-label">选择Excel文件</label>
+            <input type="file" id="fileInput" class="file-input" accept=".xlsx">
+        </div>
+        
+        <div class="file-name" id="fileName">未选择文件</div>
+        
+        <button class="btn" id="processBtn" disabled>生成点名泡泡</button>
+    </div>
+    
+    <div class="status-message" id="statusMessage"></div>
+    
+    <div class="container" id="bubbleContainer">
+        <!-- 泡泡将通过JavaScript动态生成 -->
+    </div>
+    
+    <div class="controls" id="controls">
+        <button class="btn" id="resetBtn">重置</button>
+        <button class="btn" id="restoreBtn">还原</button>
+        <button class="btn" id="reuploadBtn">重新上传名单</button>
+    </div>
+    
+    <div class="footer">
+        <p>泡泡点名工具 &copy; 2025 - 泡泡点名</p>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const fileInput = document.getElementById('fileInput');
+        const fileName = document.getElementById('fileName');
+        const processBtn = document.getElementById('processBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const bubbleContainer = document.getElementById('bubbleContainer');
+        const controls = document.getElementById('controls');
+        const resetBtn = document.getElementById('resetBtn');
+        const restoreBtn = document.getElementById('restoreBtn');
+        const reuploadBtn = document.getElementById('reuploadBtn');
+        const uploadSection = document.getElementById('uploadSection');
+
+        // 存储学生数据和泡泡状态
+        let students = [];
+        let bubbles = [];
+
+        // 文件选择事件
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                fileName.textContent = file.name;
+                processBtn.disabled = false;
+            } else {
+                fileName.textContent = '未选择文件';
+                processBtn.disabled = true;
+            }
+        });
+
+        // 处理按钮点击事件
+        processBtn.addEventListener('click', function() {
+            const file = fileInput.files[0];
+            if (!file) return;
+            
+            statusMessage.textContent = '处理中...';
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    // 获取第一个工作表
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    
+                    // 将工作表转换为JSON
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+                    
+                    // 处理数据
+                    processExcelData(jsonData);
+                    
+                } catch (error) {
+                    statusMessage.textContent = '错误: ' + error.message;
+                    console.error(error);
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+        });
+
+        // 处理Excel数据
+        function processExcelData(data) {
+            students = [];
+            
+            // 跳过空行和可能的标题行
+            for (let i = 0; i < data.length; i++) {
+                const row = data[i];
+                
+                // 检查是否是标题行（包含"序号"或"姓名"）
+                if (row && row.length >= 2 && 
+                    (String(row[0]).includes('序号') || String(row[1]).includes('姓名') ||
+                     String(row[0]).includes('学号') || String(row[1]).includes('名字'))) {
+                    continue; // 跳过标题行
+                }
+                
+                if (row && row.length >= 2 && row[0] !== undefined && row[1] !== undefined && row[0] !== '' && row[1] !== '') {
+                    students.push({
+                        id: row[0],
+                        name: row[1]
+                    });
+                }
+            }
+            
+            if (students.length === 0) {
+                statusMessage.textContent = '错误: 没有找到有效数据';
+                return;
+            }
+            
+            statusMessage.textContent = `成功加载 ${students.length} 名学生`;
+            
+            // 隐藏上传区域，显示泡泡容器和控制按钮
+            uploadSection.style.display = 'none';
+            bubbleContainer.style.display = 'block';
+            controls.style.display = 'block';
+            
+            // 创建泡泡
+            createBubbles();
+            positionBubbles();
+        }
+
+        // 创建泡泡元素
+        function createBubbles() {
+            bubbleContainer.innerHTML = '';
+            bubbles = [];
+            
+            // 随机排序学生数组
+            const shuffledStudents = [...students].sort(() => Math.random() - 0.5);
+            
+            shuffledStudents.forEach(student => {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.textContent = student.id;
+                bubble.dataset.name = student.name;
+                bubble.dataset.id = student.id;
+                
+                bubble.addEventListener('click', () => {
+                    if (bubble.classList.contains('show-name')) {
+                        bubble.classList.remove('show-name');
+                        bubble.textContent = student.id;
+                    } else {
+                        bubble.classList.add('show-name');
+                        bubble.textContent = student.name;
+                    }
+                });
+                
+                bubbleContainer.appendChild(bubble);
+                bubbles.push(bubble);
+            });
+        }
+
+        // 定位泡泡，确保不重叠
+        function positionBubbles() {
+            const containerWidth = bubbleContainer.offsetWidth;
+            const containerHeight = bubbleContainer.offsetHeight;
+            const bubbleSize = 70;
+            const margin = 20;
+            
+            // 用于检查重叠的数组
+            const positionedBubbles = [];
+            
+            bubbles.forEach(bubble => {
+                let overlapping = true;
+                let attempts = 0;
+                let x, y;
+                
+                // 尝试找到一个不重叠的位置
+                while (overlapping && attempts < 100) {
+                    x = margin + Math.random() * (containerWidth - bubbleSize - 2 * margin);
+                    y = margin + Math.random() * (containerHeight - bubbleSize - 2 * margin);
+                    
+                    overlapping = false;
+                    
+                    // 检查是否与已定位的泡泡重叠
+                    for (const positionedBubble of positionedBubbles) {
+                        const dx = positionedBubble.x - x;
+                        const dy = positionedBubble.y - y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < bubbleSize + margin) {
+                            overlapping = true;
+                            break;
+                        }
+                    }
+                    
+                    attempts++;
+                }
+                
+                // 设置泡泡位置
+                bubble.style.left = `${x}px`;
+                bubble.style.top = `${y}px`;
+                
+                // 记录已定位的泡泡
+                positionedBubbles.push({x, y});
+            });
+        }
+
+        // 重置功能
+        resetBtn.addEventListener('click', () => {
+            createBubbles();
+            positionBubbles();
+        });
+
+        // 还原功能
+        restoreBtn.addEventListener('click', () => {
+            bubbles.forEach(bubble => {
+                if (bubble.classList.contains('show-name')) {
+                    bubble.classList.remove('show-name');
+                    bubble.textContent = bubble.dataset.id;
+                }
+            });
+        });
+
+        // 重新上传名单功能
+        reuploadBtn.addEventListener('click', () => {
+            // 隐藏泡泡容器和控制按钮
+            bubbleContainer.style.display = 'none';
+            controls.style.display = 'none';
+            
+            // 显示上传区域
+            uploadSection.style.display = 'block';
+            
+            // 清空文件选择和状态信息
+            fileInput.value = '';
+            fileName.textContent = '未选择文件';
+            processBtn.disabled = true;
+            statusMessage.textContent = '';
+            
+            // 清空学生数据
+            students = [];
+        });
+
+        // 窗口大小改变时重新定位泡泡
+        window.addEventListener('resize', positionBubbles);
+    </script>
+</body>
+</html>
